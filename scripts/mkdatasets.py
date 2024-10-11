@@ -145,6 +145,34 @@ def split_h5_datasets(test_file, train_file, pd_file, output_train_file, output_
         max_len_val = max(len(pt_l1_val), len(eta_l1_val), len(phi_l1_val))
         max_len_test = max(len(pt_l1_test), len(eta_l1_test), len(phi_l1_test))
 
+        # Split subleading muon data if muon_level >= 2
+        if muon_level >= 2:
+            pt_l2_train = np.concatenate([pt_l2_trainmc[:num_train // 2], pt_l2_pd[:num_train // 2]], axis=0)
+            eta_l2_train = np.concatenate([eta_l2_trainmc[:num_train // 2], eta_l2_pd[:num_train // 2]], axis=0)
+            phi_l2_train = np.concatenate([phi_l2_trainmc[:num_train // 2], phi_l2_pd[:num_train // 2]], axis=0)
+
+            pt_l2_val = pt_l2_trainmc[num_train // 2:num_train // 2 + num_val // 2]
+            eta_l2_val = eta_l2_trainmc[num_train // 2:num_train // 2 + num_val // 2]
+            phi_l2_val = phi_l2_trainmc[num_train // 2:num_train // 2 + num_val // 2]
+
+            pt_l2_test = pt_l2_testmc[:num_test // 2]
+            eta_l2_test = eta_l2_testmc[:num_test // 2]
+            phi_l2_test = phi_l2_testmc[:num_test // 2]
+
+        # Split track-level data if muon_level == 3
+        if muon_level == 3:
+            pt_tracks_train = np.concatenate([pt_tracks_trainmc[:num_train // 2], pt_tracks_pd[:num_train // 2]], axis=0)
+            eta_tracks_train = np.concatenate([eta_tracks_trainmc[:num_train // 2], eta_tracks_pd[:num_train // 2]], axis=0)
+            phi_tracks_train = np.concatenate([phi_tracks_trainmc[:num_train // 2], phi_tracks_pd[:num_train // 2]], axis=0)
+
+            pt_tracks_val = pt_tracks_trainmc[num_train // 2:num_train // 2 + num_val // 2]
+            eta_tracks_val = eta_tracks_trainmc[num_train // 2:num_train // 2 + num_val // 2]
+            phi_tracks_val = phi_tracks_trainmc[num_train // 2:num_train // 2 + num_val // 2]
+
+            pt_tracks_test = pt_tracks_testmc[:num_test // 2]
+            eta_tracks_test = eta_tracks_testmc[:num_test // 2]
+            phi_tracks_test = phi_tracks_testmc[:num_test // 2]
+
         # Pad datasets
         pt_l1_train = pad_to_max([pt_l1_train], max_len_train)
         eta_l1_train = pad_to_max([eta_l1_train], max_len_train)
@@ -158,36 +186,61 @@ def split_h5_datasets(test_file, train_file, pd_file, output_train_file, output_
         eta_l1_test = pad_to_max([eta_l1_test], max_len_test)
         phi_l1_test = pad_to_max([phi_l1_test], max_len_test)
 
-        # Save the datasets to output files
-        with h5py.File(output_train_file, 'w') as f_train:
-            f_train.create_dataset('pT_l1', data=pt_l1_train)
-            f_train.create_dataset('eta_l1', data=eta_l1_train)
-            f_train.create_dataset('phi_l1', data=phi_l1_train)
-            f_train.create_dataset('Pmu', data=Pmu_train)
-            f_train.create_dataset('is_signal', data=is_signal_train)
-            f_train.create_dataset('label', data=label_train)
-            f_train.create_dataset('Nobj', data=Nobj_train)
-            f_train.create_dataset('weight', data=weight_train)
+        # Save datasets for training, validation, and testing
+    with h5py.File(output_train_file, 'w') as f:
+        f.create_dataset('pT_l1', data=pt_l1_train)
+        f.create_dataset('eta_l1', data=eta_l1_train)
+        f.create_dataset('phi_l1', data=phi_l1_train)
+        f.create_dataset('weight', data=weight_train)
+        f.create_dataset('Pmu', data=Pmu_train)
+        f.create_dataset('is_signal', data=is_signal_train)
+        f.create_dataset('label', data=label_train)
+        f.create_dataset('Nobj', data=Nobj_train)
 
-        with h5py.File(output_val_file, 'w') as f_val:
-            f_val.create_dataset('pT_l1', data=pt_l1_val)
-            f_val.create_dataset('eta_l1', data=eta_l1_val)
-            f_val.create_dataset('phi_l1', data=phi_l1_val)
-            f_val.create_dataset('Pmu', data=Pmu_val)
-            f_val.create_dataset('is_signal', data=is_signal_val)
-            f_val.create_dataset('label', data=label_val)
-            f_val.create_dataset('Nobj', data=Nobj_val)
-            f_val.create_dataset('weight', data=weight_val)
+        if muon_level >= 2:
+            f.create_dataset('pT_l2', data=pt_l2_train)
+            f.create_dataset('eta_l2', data=eta_l2_train)
+            f.create_dataset('phi_l2', data=phi_l2_train)
+        if muon_level == 3:
+            f.create_dataset('pT_tracks', data=pt_tracks_train)
+            f.create_dataset('eta_tracks', data=eta_tracks_train)
+            f.create_dataset('phi_tracks', data=phi_tracks_train)
 
-        with h5py.File(output_test_file, 'w') as f_test:
-            f_test.create_dataset('pT_l1', data=pt_l1_test)
-            f_test.create_dataset('eta_l1', data=eta_l1_test)
-            f_test.create_dataset('phi_l1', data=phi_l1_test)
-            f_test.create_dataset('Pmu', data=Pmu_test)
-            f_test.create_dataset('is_signal', data=is_signal_test)
-            f_test.create_dataset('label', data=label_test)
-            f_test.create_dataset('Nobj', data=Nobj_test)
-            f_test.create_dataset('weight', data=weight_test)
+    with h5py.File(output_val_file, 'w') as f:
+        f.create_dataset('pT_l1', data=pt_l1_val)
+        f.create_dataset('eta_l1', data=eta_l1_val)
+        f.create_dataset('phi_l1', data=phi_l1_val)
+        f.create_dataset('weight', data=weight_val)
+        f.create_dataset('Pmu', data=Pmu_val)
+        f.create_dataset('is_signal', data=is_signal_val)
+        f.create_dataset('label', data=label_val)
+        f.create_dataset('Nobj', data=Nobj_val)
+        if muon_level >= 2:
+            f.create_dataset('pT_l2', data=pt_l2_val)
+            f.create_dataset('eta_l2', data=eta_l2_val)
+            f.create_dataset('phi_l2', data=phi_l2_val)
+        if muon_level == 3:
+            f.create_dataset('pT_tracks', data=pt_tracks_val)
+            f.create_dataset('eta_tracks', data=eta_tracks_val)
+            f.create_dataset('phi_tracks', data=phi_tracks_val)
+
+    with h5py.File(output_test_file, 'w') as f:
+        f.create_dataset('pT_l1', data=pt_l1_test)
+        f.create_dataset('eta_l1', data=eta_l1_test)
+        f.create_dataset('phi_l1', data=phi_l1_test)
+        f.create_dataset('weight', data=weight_test)
+        f.create_dataset('Pmu', data=Pmu_test)
+        f.create_dataset('is_signal', data=is_signal_test)
+        f.create_dataset('label', data=label_test)
+        f.create_dataset('Nobj', data=Nobj_test)
+        if muon_level >= 2:
+            f.create_dataset('pT_l2', data=pt_l2_test)
+            f.create_dataset('eta_l2', data=eta_l2_test)
+            f.create_dataset('phi_l2', data=phi_l2_test)
+        if muon_level == 3:
+            f.create_dataset('pT_tracks', data=pt_tracks_test)
+            f.create_dataset('eta_tracks', data=eta_tracks_test)
+            f.create_dataset('phi_tracks', data=phi_tracks_test)
 
         # Calculate and print the fractions for each dataset
         calculate_fractions(is_signal_train, "Training")
@@ -198,6 +251,6 @@ def split_h5_datasets(test_file, train_file, pd_file, output_train_file, output_
 
 
 
-split_h5_datasets('h5files/testmc_muonlevel1.h5', 'h5files/trainmc_muonlevel1.h5', 'h5files/pd_muonlevel1.h5', '../datasets/muonlevel1/train.h5', '../datasets/muonlevel1/valid.h5', '../datasets/muonlevel1/test.h5', muon_level=1)
+# split_h5_datasets('h5files/testmc_muonlevel1.h5', 'h5files/trainmc_muonlevel1.h5', 'h5files/pd_muonlevel1.h5', '../datasets/muonlevel1/train.h5', '../datasets/muonlevel1/valid.h5', '../datasets/muonlevel1/test.h5', muon_level=1)
 # split_h5_datasets('h5files/testmc_muonlevel2.h5', 'h5files/trainmc_muonlevel2.h5', 'h5files/pd_muonlevel2.h5', '../datasets/muonlevel2/train.h5', '../datasets/muonlevel2/valid.h5', '../datasets/muonlevel2/test.h5', muon_level=2)
-# split_h5_datasets('h5files/testmc_muonlevel3.h5', 'h5files/trainmc_muonlevel3.h5', 'h5files/pd_muonlevel3.h5', '../datasets/muonlevel3/train.h5', '../datasets/muonlevel3/valid.h5', '../datasets/muonlevel3/test.h5', muon_level=3)
+split_h5_datasets('h5files/testmc_muonlevel3.h5', 'h5files/trainmc_muonlevel3.h5', 'h5files/pd_muonlevel3.h5', '../datasets/muonlevel3/train.h5', '../datasets/muonlevel3/valid.h5', '../datasets/muonlevel3/test.h5', muon_level=3)
