@@ -58,7 +58,7 @@ def plot_reweighting(
     n_mc, bins, patches =  ax.hist(source_data, bins=bins, label=name1, density=True, alpha=0.5, weights=source_weight_start)
     if source_weight_end is not None:
         n_rw, bins, patches = ax.hist(source_data, bins=bins, label='Reweighted', density=True, histtype='step', color='black', weights=source_weight_end)
-        print (n_rw)
+        # print (n_rw)
     if target_weight is None:
         target_weight = np.ones_like(target_data)
     n_pd, bins, patches = ax.hist(target_data, bins=bins, label=name2, density=True, alpha=0.5, weights=target_weight)
@@ -104,23 +104,13 @@ def add_ratios(fig):
 
 def getweight_pelican(inputfile):
     prediction=torch.load(inputfile,"cpu")
+    targets = prediction["targets"]
     logits_MC = prediction['predict'][:, 1]
     logits_PD = prediction['predict'][:, 0]
     ## convert logits into probability by passing through the sigmoid function (essentially doing: prob = 1 / (1 + np.exp(-logit)) )
     prob_MC = torch.sigmoid(logits_MC)
     prob_PD = torch.sigmoid(logits_PD)
     weight = np.array(prob_MC/(1-prob_MC))
-
-
-    # weight = np.array(prob_MC)
-    # print(weight)
-    # print(probs)
-    # print(prob_MC)
-    # print(weight.shape)
-
-
-    # weight = np.array(prob_MC/prob_PD)
-    targets = prediction["targets"]
     weight = weight[targets==1]
     # print(weight)
     # print(weight.shape)

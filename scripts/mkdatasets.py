@@ -25,6 +25,15 @@ def pad_labels(labels, max_length):
     return np.array(padded_labels)
 
 def split_h5_datasets(test_file, train_file, pd_file, output_train_file, output_val_file, output_test_file, muon_level=1):
+
+    # Print the input files being used
+    print(f"Input Test MC File: {test_file}")
+    print(f"Input Train MC File: {train_file}")
+    print(f"Input PD File: {pd_file}")
+    print(f"Output Train Dataset File: {output_train_file}")
+    print(f"Output Validation Dataset File: {output_val_file}")
+    print(f"Output Test Dataset File: {output_test_file}\n")
+    
     # Load the input files
     with h5py.File(test_file, 'r') as f_testmc, h5py.File(train_file, 'r') as f_trainmc, h5py.File(pd_file, 'r') as f_pd:
         
@@ -174,17 +183,30 @@ def split_h5_datasets(test_file, train_file, pd_file, output_train_file, output_
             phi_tracks_test = phi_tracks_testmc[:num_test // 2]
 
         # Pad datasets
-        pt_l1_train = pad_to_max([pt_l1_train], max_len_train)
-        eta_l1_train = pad_to_max([eta_l1_train], max_len_train)
-        phi_l1_train = pad_to_max([phi_l1_train], max_len_train)
+        pt_l1_train = pad_to_max([pt_l1_train], max_len_train).squeeze()
+        eta_l1_train = pad_to_max([eta_l1_train], max_len_train).squeeze()
+        phi_l1_train = pad_to_max([phi_l1_train], max_len_train).squeeze()
 
-        pt_l1_val = pad_to_max([pt_l1_val], max_len_val)
-        eta_l1_val = pad_to_max([eta_l1_val], max_len_val)
-        phi_l1_val = pad_to_max([phi_l1_val], max_len_val)
+        pt_l1_val = pad_to_max([pt_l1_val], max_len_val).squeeze()
+        eta_l1_val = pad_to_max([eta_l1_val], max_len_val).squeeze()
+        phi_l1_val = pad_to_max([phi_l1_val], max_len_val).squeeze()
 
-        pt_l1_test = pad_to_max([pt_l1_test], max_len_test)
-        eta_l1_test = pad_to_max([eta_l1_test], max_len_test)
-        phi_l1_test = pad_to_max([phi_l1_test], max_len_test)
+        pt_l1_test = pad_to_max([pt_l1_test], max_len_test).squeeze()
+        eta_l1_test = pad_to_max([eta_l1_test], max_len_test).squeeze()
+        phi_l1_test = pad_to_max([phi_l1_test], max_len_test).squeeze()
+
+        # Pad datasets
+        # pt_l2_train = pad_to_max([pt_l2_train], max_len_train)
+        # eta_l2_train = pad_to_max([eta_l2_train], max_len_train)
+        # phi_l2_train = pad_to_max([phi_l2_train], max_len_train)
+
+        # pt_l2_val = pad_to_max([pt_l2_val], max_len_val)
+        # eta_l2_val = pad_to_max([eta_l2_val], max_len_val)
+        # phi_l2_val = pad_to_max([phi_l2_val], max_len_val)
+
+        # pt_l2_test = pad_to_max([pt_l2_test], max_len_test)
+        # eta_l2_test = pad_to_max([eta_l2_test], max_len_test)
+        # phi_l2_test = pad_to_max([phi_l2_test], max_len_test)
 
         # Save datasets for training, validation, and testing
     with h5py.File(output_train_file, 'w') as f:
@@ -248,9 +270,22 @@ def split_h5_datasets(test_file, train_file, pd_file, output_train_file, output_
         calculate_fractions(is_signal_test, "Test")
 
 
+    # Print or save the test indices
+    print("Test MC indices:", test_mc_indices)
+    print("Test PD indices:", test_pd_indices)
+
+# Alternatively, save the indices to a file
+    np.save('test_mc_indices.npy', test_mc_indices)
+    np.save('test_pd_indices.npy', test_pd_indices)    
 
 
 
-# split_h5_datasets('h5files/testmc_muonlevel1.h5', 'h5files/trainmc_muonlevel1.h5', 'h5files/pd_muonlevel1.h5', '../datasets/muonlevel1/train.h5', '../datasets/muonlevel1/valid.h5', '../datasets/muonlevel1/test.h5', muon_level=1)
-# split_h5_datasets('h5files/testmc_muonlevel2.h5', 'h5files/trainmc_muonlevel2.h5', 'h5files/pd_muonlevel2.h5', '../datasets/muonlevel2/train.h5', '../datasets/muonlevel2/valid.h5', '../datasets/muonlevel2/test.h5', muon_level=2)
-split_h5_datasets('h5files/testmc_muonlevel3.h5', 'h5files/trainmc_muonlevel3.h5', 'h5files/pd_muonlevel3.h5', '../datasets/muonlevel3/train.h5', '../datasets/muonlevel3/valid.h5', '../datasets/muonlevel3/test.h5', muon_level=3)
+
+split_h5_datasets('h5files/testmc_muonlevel1.h5', 'h5files/trainmc_muonlevel1.h5', 'h5files/pd_muonlevel1.h5', 'train_temp.h5', 'valid_temp.h5', 'test_temp.h5', muon_level=1)
+
+# split_h5_datasets('h5files/testmc_muonlevel1.h5', 'h5files/trainmc_muonlevel1.h5', 'h5files/pd_muonlevel1.h5', 'datasets/muonlevel1/train.h5', 'datasets/muonlevel1/valid.h5', 'datasets/muonlevel1/test.h5', muon_level=1)
+# split_h5_datasets('h5files/testmc_muonlevel2.h5', 'h5files/trainmc_muonlevel2.h5', 'h5files/pd_muonlevel2.h5', '../datasets/muonlevel2_TEST/train.h5', '../datasets/muonlevel2_TEST/valid.h5', '../datasets/muonlevel2_TEST/test.h5', muon_level=2)
+# split_h5_datasets('h5files/testmc_muonlevel3.h5', 'h5files/trainmc_muonlevel3.h5', 'h5files/pd_muonlevel3.h5', '../datasets/muonlevel3_TEST/train.h5', '../datasets/muonlevel3_TEST/valid.h5', '../datasets/muonlevel3_TEST/test.h5', muon_level=3)
+
+
+# split_h5_datasets('h5files/testmc_muonlevel1_signal.h5', 'h5files/testmc_muonlevel1_signal.h5', 'h5files/testmc_muonlevel1_background.h5', '../datasets/muonlevel1_SAME/train.h5', '../datasets/muonlevel1_SAME/valid.h5', '../datasets/muonlevel1_SAME/test.h5', muon_level=1)
